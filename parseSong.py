@@ -3,8 +3,8 @@ import math
 import re
 
 
-durationNotes = {1:"WholeNote", 2:"HalfNote", 4:"QuarterNote", 8:"EightNote", 16:"SixteenthNote", 32:"ThirtyTwothNote"}
-noteToFreqDitch = {
+duration_to_note_dict = {1:"WholeNote", 2:"HalfNote", 4:"QuarterNote", 8:"EightNote", 16:"SixteenthNote", 32:"ThirtyTwothNote"}
+note_to_freq_dict = {
 'C0':16.35,'C0Sharp':17.32,'D0':18.35,'D0Sharp':19.45,'E0':20.6,'F0':21.83,'F0Sharp':23.12,'G0':24.5,'G0Sharp':25.96,'A0':27.5,'A0Sharp':29.14,'B0':30.87,
 'C1':32.7,'C1Sharp':34.65,'D1':36.71,'D1Sharp':38.89,'E1':41.2,'F1':43.65,'F1Sharp':46.25,'G1':49,'G1Sharp':51.91,'A1':55,'A1Sharp':58.27,'B1':61.74,
 'C2':65.41,'C2Sharp':69.3,'D2':73.42,'D2Sharp':77.78,'E2':82.41,'F2':87.31,'F2Sharp':92.5,'G2':98,'G2Sharp':103.83,'A2':110,'A2Sharp':116.54,'B2':123.47,
@@ -15,7 +15,7 @@ noteToFreqDitch = {
 'C7':2093,'C7Sharp':2217.46,'D7':2349.32,'D7Sharp':2489.02,'E7':2637.02,'F7':2793.83,'F7Sharp':2959.96,'G7':3135.96,'G7Sharp':3322.44,'A7':3520,'A7Sharp':3729.31,'B7':3951.07,
 'C8':4186.01,'C8Sharp':4434.92,'D8':4698.63,'D8Sharp':4978.03,'E8':5274.04,'F8':5587.65,'F8Sharp':5919.91,'G8':6271.93,'G8Sharp':6644.88,'A8':7040,'A8Sharp':7458.62,'B8':7902.13
 }
-duration_time_notes = {1:240.0, 2:120.0, 4:60.0, 8:30.0, 16:15.0, 32:7.5}
+duration_to_time_dict = {1:240.0, 2:120.0, 4:60.0, 8:30.0, 16:15.0, 32:7.5}
 
 
 def main():
@@ -94,11 +94,11 @@ def parse_song(input_string, tempo, song_name, play_sound, pitch_shift):
 		else:		
 			note = rest.upper()
 		
-		total_duration += duration_time_notes[length] / tempo
+		total_duration += duration_to_time_dict[length] / tempo
 			
-		print("\tnew RoombaSongNote(RoombaNote."+note+", RoombaNoteDuration."+durationNotes[length]+"),")
+		print("\tnew RoombaSongNote(RoombaNote."+note+", RoombaNoteDuration."+duration_to_note_dict[length]+"),")
 		if play_sound:
-			ms = int((duration_time_notes[length] / tempo) * 1000 )
+			ms = int((duration_to_time_dict[length] / tempo) * 1000 )
 			new_note = ""
 			for c in note:
 				if c.isdigit():
@@ -106,7 +106,7 @@ def parse_song(input_string, tempo, song_name, play_sound, pitch_shift):
 				else:
 					new_note += c
 			if note != 'Pause':
-				winsound.Beep(int(noteToFreqDitch[new_note]), ms)
+				winsound.Beep(int(note_to_freq_dict[new_note]), ms)
 			else:
 				from time import sleep
 				sleep(ms / 1000.0)
