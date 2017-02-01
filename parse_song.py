@@ -2,10 +2,10 @@
 
 Parses nokia ringtones, plays them and spits out Java code for use with RoombaJSSC
 """
-
-import winsound
 import math
 import re
+
+import winsound
 
 DURATION_TO_NOTE_DICT = {1:"WholeNote", 2:"HalfNote", 4:"QuarterNote",
                          8:"EightNote", 16:"SixteenthNote", 32:"ThirtyTwothNote"}
@@ -31,21 +31,20 @@ NOTE_TO_FREQ_DICT = {
 }
 DURATION_TO_TIME_DICT = {1:240.0, 2:120.0, 4:60.0, 8:30.0, 16:15.0, 32:7.5}
 
-
 def main():
     pitch_shift = 2
-    play_sound = True   
-    
+    play_sound = True
+
     current_name = None
     current_tempo = None
-    
-    f = open('s.txt', 'r')  
-    
-    for line in f:
+
+    note_file = open('s.txt', 'r')
+
+    for line in note_file:
         if line[0] == ' ' and line[1] == ' ':
             input_string = line[2:].rstrip()
             print(repr(input_string))
-            parse_song(input_string, current_tempo, current_name, play_sound, pitch_shift)              
+            parse_song(input_string, current_tempo, current_name, play_sound, pitch_shift)
         else:
             print(line)
             split_line = line.split('Tempo=')
@@ -84,7 +83,7 @@ def parse_song(input_string, tempo, song_name, play_sound, pitch_shift):
 
         length = None
         note = None
-        extended = False
+        #extended = False
         rest = None
         if note_string[0] == '1' and note_string[1] == '6':
             length = 16
@@ -95,37 +94,38 @@ def parse_song(input_string, tempo, song_name, play_sound, pitch_shift):
         else:
             length = int(note_string[0])
             rest = note_string[1:]
-            
+
         if rest[0] == '.':
-            extended = True
+            #extended = True
             rest = rest[1:]
-            
+
         if rest[0] == '-':
             note = "Pause"
         elif rest[0] == '#':
             rest = rest[1:]
             note = rest.upper() + "Sharp"
-        else:       
+        else:
             note = rest.upper()
-        
+
         total_duration += DURATION_TO_TIME_DICT[length] / tempo
-            
-        print("\tnew RoombaSongNote(RoombaNote."+note+", RoombaNoteDuration."+DURATION_TO_NOTE_DICT[length]+"),")
+
+        print("\tnew RoombaSongNote(RoombaNote." + note+ ", RoombaNoteDuration." + \
+            DURATION_TO_NOTE_DICT[length]+"),")
         if play_sound:
-            ms = int((DURATION_TO_TIME_DICT[length] / tempo) * 1000 )
+            milliseconds = int((DURATION_TO_TIME_DICT[length] / tempo) * 1000)
             new_note = ""
-            for c in note:
-                if c.isdigit():
-                    new_note += str(int(c) + pitch_shift)
+            for character in note:
+                if character.isdigit():
+                    new_note += str(int(character) + pitch_shift)
                 else:
-                    new_note += c
+                    new_note += character
             if note != 'Pause':
-                winsound.Beep(int(NOTE_TO_FREQ_DICT[new_note]), ms)
+                winsound.Beep(int(NOTE_TO_FREQ_DICT[new_note]), milliseconds)
             else:
                 from time import sleep
-                sleep(ms / 1000.0)
+                sleep(milliseconds / 1000.0)
     print("}\n")
-    current += 1 
+    current += 1
     method_string += "  roomba.play("+str(current-2)+");\n"
     method_string += "  roomba.sleep(" + str(int(total_duration*1000)+50) + ");\n}"
     print(method_string)
