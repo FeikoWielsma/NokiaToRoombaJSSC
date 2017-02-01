@@ -19,102 +19,102 @@ duration_to_time_dict = {1:240.0, 2:120.0, 4:60.0, 8:30.0, 16:15.0, 32:7.5}
 
 
 def main():
-	pitch_shift = 2
-	play_sound = True	
-	
-	current_name = None
-	current_tempo = None
-	
-	f = open('s.txt', 'r')	
-	
-	for line in f:
-		if line[0] == ' ' and line[1] == ' ':
-			input_string = line[2:].rstrip()
-			print(repr(input_string))
-			parse_song(input_string, current_tempo, current_name, play_sound, pitch_shift)				
-		else:
-			print(line)
-			split_line = line.split('Tempo=')
-			current_tempo = int(split_line[1].split(')')[0])
-			regex = re.compile('[^a-zA-Z]')
-			current_name = regex.sub('', split_line[0])
-			current_name = current_name[0].lower() + current_name[1:]
+    pitch_shift = 2
+    play_sound = True   
+    
+    current_name = None
+    current_tempo = None
+    
+    f = open('s.txt', 'r')  
+    
+    for line in f:
+        if line[0] == ' ' and line[1] == ' ':
+            input_string = line[2:].rstrip()
+            print(repr(input_string))
+            parse_song(input_string, current_tempo, current_name, play_sound, pitch_shift)              
+        else:
+            print(line)
+            split_line = line.split('Tempo=')
+            current_tempo = int(split_line[1].split(')')[0])
+            regex = re.compile('[^a-zA-Z]')
+            current_name = regex.sub('', split_line[0])
+            current_name = current_name[0].lower() + current_name[1:]
 
 def parse_song(input_string, tempo, song_name, play_sound, pitch_shift):
-	total_duration = 0
-	current = 0
+    total_duration = 0
+    current = 0
 
-	method_string = "public static void " + song_name + "(RoombaJSSC roomba)\n{\n"
+    method_string = "public static void " + song_name + "(RoombaJSSC roomba)\n{\n"
 
-	number_of_songs = int(math.ceil(len(input_string.split(' ')) / 16.0))
-	#Print load songnames for the method
-	for i in range(number_of_songs):
-		method_string += "	roomba.song("+str(i)+", " + song_name + str(i+1) + ", " + str(int(tempo)) + ");\n"
+    number_of_songs = int(math.ceil(len(input_string.split(' ')) / 16.0))
+    #Print load songnames for the method
+    for i in range(number_of_songs):
+        method_string += "  roomba.song("+str(i)+", " + song_name + str(i+1) + ", " + str(int(tempo)) + ");\n"
 
-	#Start printing notes
-	for i, note_string in enumerate(input_string.split(' ')):
-		#Every 4 notes, add a new line for clarity
-		if i % 4 == 0:
-			print("")
-		#Every 16 notes, create a new RoombaSongNote[]
-		if i % 16 == 0:
-			current += 1
-			if current != 1:
-				method_string += "	roomba.play("+str(current-2)+");\n"
-				method_string += "	roomba.sleep(" + str(int(total_duration*1000)+50) + ");\n"
-				total_duration = 0
-				print("};\npublic static RoombaSongNote[] " + song_name + str(current) + " = {")
-			else:
-				print("//"+song_name+" songnotes")
-				print("public static RoombaSongNote[] " + song_name + str(current) + " = {")
+    #Start printing notes
+    for i, note_string in enumerate(input_string.split(' ')):
+        #Every 4 notes, add a new line for clarity
+        if i % 4 == 0:
+            print("")
+        #Every 16 notes, create a new RoombaSongNote[]
+        if i % 16 == 0:
+            current += 1
+            if current != 1:
+                method_string += "  roomba.play("+str(current-2)+");\n"
+                method_string += "  roomba.sleep(" + str(int(total_duration*1000)+50) + ");\n"
+                total_duration = 0
+                print("};\npublic static RoombaSongNote[] " + song_name + str(current) + " = {")
+            else:
+                print("//"+song_name+" songnotes")
+                print("public static RoombaSongNote[] " + song_name + str(current) + " = {")
 
-		length = None
-		note = None
-		extended = False
-		rest = None
-		if note_string[0] == '1' and note_string[1] == '6':
-			length = 16
-			rest = note_string[2:]
-		elif note_string[0] == '3' and note_string[1] == '2':
-			length = 32
-			rest = note_string[2:]
-		else:
-			length = int(note_string[0])
-			rest = note_string[1:]
-			
-		if rest[0] == '.':
-			extended = True
-			rest = rest[1:]
-			
-		if rest[0] == '-':
-			note = "Pause"
-		elif rest[0] == '#':
-			rest = rest[1:]
-			note = rest.upper() + "Sharp"
-		else:		
-			note = rest.upper()
-		
-		total_duration += duration_to_time_dict[length] / tempo
-			
-		print("\tnew RoombaSongNote(RoombaNote."+note+", RoombaNoteDuration."+duration_to_note_dict[length]+"),")
-		if play_sound:
-			ms = int((duration_to_time_dict[length] / tempo) * 1000 )
-			new_note = ""
-			for c in note:
-				if c.isdigit():
-					new_note += str(int(c) + pitch_shift)
-				else:
-					new_note += c
-			if note != 'Pause':
-				winsound.Beep(int(note_to_freq_dict[new_note]), ms)
-			else:
-				from time import sleep
-				sleep(ms / 1000.0)
-	print("}\n")
-	current += 1 
-	method_string += "	roomba.play("+str(current-2)+");\n"
-	method_string += "	roomba.sleep(" + str(int(total_duration*1000)+50) + ");\n}"
-	print(method_string)
+        length = None
+        note = None
+        extended = False
+        rest = None
+        if note_string[0] == '1' and note_string[1] == '6':
+            length = 16
+            rest = note_string[2:]
+        elif note_string[0] == '3' and note_string[1] == '2':
+            length = 32
+            rest = note_string[2:]
+        else:
+            length = int(note_string[0])
+            rest = note_string[1:]
+            
+        if rest[0] == '.':
+            extended = True
+            rest = rest[1:]
+            
+        if rest[0] == '-':
+            note = "Pause"
+        elif rest[0] == '#':
+            rest = rest[1:]
+            note = rest.upper() + "Sharp"
+        else:       
+            note = rest.upper()
+        
+        total_duration += duration_to_time_dict[length] / tempo
+            
+        print("\tnew RoombaSongNote(RoombaNote."+note+", RoombaNoteDuration."+duration_to_note_dict[length]+"),")
+        if play_sound:
+            ms = int((duration_to_time_dict[length] / tempo) * 1000 )
+            new_note = ""
+            for c in note:
+                if c.isdigit():
+                    new_note += str(int(c) + pitch_shift)
+                else:
+                    new_note += c
+            if note != 'Pause':
+                winsound.Beep(int(note_to_freq_dict[new_note]), ms)
+            else:
+                from time import sleep
+                sleep(ms / 1000.0)
+    print("}\n")
+    current += 1 
+    method_string += "  roomba.play("+str(current-2)+");\n"
+    method_string += "  roomba.sleep(" + str(int(total_duration*1000)+50) + ");\n}"
+    print(method_string)
 
 if __name__ == "__main__":
     main()
